@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-db
+  template:
+    metadata:
+      labels:
+        app: spring-db
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:9.5.0
+          env:
+            - name: MYSQL_DATABASE
+              value: "meas"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-db
+spec:
+  selector:
+    app: spring-db
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mikrostoritev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mikrostoritev
+  template:
+    metadata:
+      labels:
+        app: mikrostoritev
+    spec:
+      containers:
+        - name: mikrostoritev
+          image: iideveloper21/backend25:latest
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "mysql"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://spring-db:3306/meas"
+          ports:
+            - containerPort: 8280
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mikrostoritev
+spec:
+  type: LoadBalancer
+  selector:
+    app: mikrostoritev
+  ports:
+    - port: 8280
+      targetPort: 8280

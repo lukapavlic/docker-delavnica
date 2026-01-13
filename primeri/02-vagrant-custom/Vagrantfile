@@ -1,0 +1,15 @@
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "bento/ubuntu-22.04"
+  config.vm.box_version = "202510.26.0"
+
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
+
+  config.vm.provider "virtualbox" do |v|
+    v.cpus = 2
+    # v.name = "ubuntu-vm"
+    v.memory = 2048
+  end
+
+end

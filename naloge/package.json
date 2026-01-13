@@ -1,0 +1,10 @@
+{
+  "name": "docker-node-http",
+  "version": "1.0.0",
+  "description": "Minimal Node.js HTTP server for Docker multi-stage build demo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}
